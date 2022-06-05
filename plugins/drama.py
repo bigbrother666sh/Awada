@@ -376,8 +376,7 @@ class DramaPlugin(WechatyPlugin):
         if len(info) > 0 and self.mmrules[intent]['read'] == 'yes':
             memory_squence = []
             for entity in info:
-                if entity in memory.keys():
-                    memory_squence += memory[entity]
+                memory_squence += memory.get(entity, [])
             if len(memory_squence) > 0:
                 memory_squence.sort(key=lambda k: (k.get('time')), reverse=False)
                 for sentence in memory_squence:
@@ -385,8 +384,7 @@ class DramaPlugin(WechatyPlugin):
 
             selfmemory_squence = []
             for entity in info:
-                if entity in self.self_memory.keys():
-                    selfmemory_squence += self.self_memory[entity]
+                selfmemory_squence += self.self_memory.get(entity, [])
             selfmemory_text = ''.join(set(selfmemory_squence))
 
         if len(selfmemory_text) > 0:
@@ -407,11 +405,7 @@ class DramaPlugin(WechatyPlugin):
 
         pre_prompt += addtion_action
 
-        if intent in rules.keys():
-            actions_txt = rules[intent]
-            actions = actions_txt.split('\n')
-        else:
-            actions = ['']
+        actions = rules.get(intent, '').split('\n')
 
         replies = []
         for action in actions:
@@ -506,7 +500,7 @@ class DramaPlugin(WechatyPlugin):
         character = self.users[talker.contact_id][0]
         memory = self.user_memory[talker.contact_id]
         last_dialog = ''.join(self.last_turn_memory[talker.contact_id][scenario][character])
-        rules = self.scenarios[scenario][character] if character in self.scenarios[scenario].keys() else {'DESCRIPTION':''}
+        rules = self.scenarios[scenario].get(character, {'DESCRIPTION':''})
         self.temp_talker = talker
 
         """
