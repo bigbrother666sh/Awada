@@ -134,7 +134,7 @@ class DramaPlugin(WechatyPlugin):
         self.take_over = False
         self.temp_talker: wechaty.Contact
         self.take_over_director: wechaty.Contact
-        self.last_text = '呵呵'
+        self.last_text = {}
 
         self.logger.info('Drada plugin init success')
 
@@ -366,7 +366,7 @@ class DramaPlugin(WechatyPlugin):
     async def soul(self, text: str, talker: Contact, scenario: str, character: str, memory: dict, last_dialog: list, rules:dict) -> None:
         # 1. understanding: intent judgment, focus information_extraction
         intent = self.nlu_intent(text)
-        infos = self.nlu_info([self.last_text, text])
+        infos = self.nlu_info([self.last_text[talker.contact_id], text])
         info = list(set(infos[0]+infos[1]))
 
         self.logger.info(f"intent:{intent}")
@@ -393,7 +393,7 @@ class DramaPlugin(WechatyPlugin):
             for entity in info:
                 selfmemory_squence += self.self_memory.get(entity, [])
             selfmemory_text = ''.join(set(selfmemory_squence))
-            pre_prompt = pre_prompt + "，你记得" + selfmemory_text + "于是"
+            pre_prompt = pre_prompt + "，你知道" + selfmemory_text + "于是"
 
         # 3. saving user's text as memory according to entity
         t = time.time()
@@ -468,6 +468,7 @@ class DramaPlugin(WechatyPlugin):
             self.users[talker.contact_id] = ['张无忌', 'welcome']
             self.user_memory[talker.contact_id] = {}
             self.last_turn_memory[talker.contact_id] = self.last_turn_memory_template
+            self.last_text[talker.contact_id] = '呵呵'
             #实际上这里是用talker.contact_id充当"局"的概念，即同样的游戏可能同时开好几局，所有的背景记忆是一样的，但是用户相关的记忆是要分开的。
             #因为这一次是单场景单角色，所以就相当于"一个用户是一句"了，所以用contact_id作为区分，假如是剧本啥这种，就可以用room_id
             await talker.say("先声明哈，我们之间的对话信息可能会被公开，介意的话请终止对话！\n"
@@ -516,6 +517,6 @@ class DramaPlugin(WechatyPlugin):
         else:
             await self.soul(text, talker, scenario, character, memory, last_dialog, rules)
 
-        self.last_text = text
+        self.last_text[talker.contact_id] = text
 
         # colorful eggs https://ai.baidu.com/ai-doc/wenxin/Zl33wtflg
