@@ -1,1 +1,1 @@
-exaples for editors
+some examples for editors

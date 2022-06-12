@@ -79,6 +79,7 @@ Version：Pre-release 0.1
 
 ```
 Author：bigbrother666sh
+        CarrotMarcus
 https://github.com/bigbrother666sh/Awada
 Licensed under Apache2.0
 ```
