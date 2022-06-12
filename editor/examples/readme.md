@@ -1,0 +1,1 @@
+exaples for editors
