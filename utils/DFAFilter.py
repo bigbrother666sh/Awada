@@ -40,8 +40,8 @@ class DFAFilter():
 
         if i == len(chars)-1:
             level[self.delimit]=0
-    file = os.path.split(os.path.realpath(__file__))[0] + 'keywords'
-    def parse(self, path = file):
+    file = os.path.split(os.path.realpath(__file__))[0]
+    def parse(self, path = os.path.join(file, 'keywords')):
         with open(path, encoding='utf-8') as f:
             for keyword in f:
                 self.add(keyword.strip())
