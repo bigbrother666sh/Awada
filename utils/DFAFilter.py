@@ -6,6 +6,7 @@ https://github.com/guojia60180/sensitive-words-filter
 更改了返回模式，返回是否检测到和检测到的敏感词(检测到第一个敏感词就返回）
 关键词数据来自：https://github.com/fwwdn/sensitive-stop-words
 '''
+import os
 
 class DFAFilter():
     '''有穷状态机完成'''
@@ -39,8 +40,8 @@ class DFAFilter():
 
         if i == len(chars)-1:
             level[self.delimit]=0
-
-    def parse(self, path="./utils/keywords"):
+    file = os.path.split(os.path.realpath(__file__))[0] + 'keywords'
+    def parse(self, path = file):
         with open(path, encoding='utf-8') as f:
             for keyword in f:
                 self.add(keyword.strip())

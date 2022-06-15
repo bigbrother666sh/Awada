@@ -133,6 +133,7 @@ class DramaPlugin(WechatyPlugin):
         self.take_over = False
         self.temp_talker: wechaty.Contact
         self.take_over_director: wechaty.Contact
+        self.corrector = Taskflow("text_correction")
 
         self.logger.info('Drada plugin init success')
 
@@ -498,6 +499,7 @@ class DramaPlugin(WechatyPlugin):
             text = msg.text()
 
         text = text.strip().replace('\n', '，')
+        text = self.corrector(text)
         self.logger.info(f"processed text:{text}")
 
         if self.gfw.filter(text):

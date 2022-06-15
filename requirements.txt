@@ -3,4 +3,4 @@ wechaty-puppet==0.4.14
 wechaty-puppet-service
 wechaty-plugin-contrib
 xlrd==1.2.0
-paddlenlp==2.3
+paddlenlp==2.3.4
