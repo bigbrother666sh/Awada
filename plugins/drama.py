@@ -516,6 +516,12 @@ class DramaPlugin(WechatyPlugin):
             await msg.say('请勿发表不当言论，谢谢配合')
             return
 
+        if self.users[talker.contact_id][1] == 'heddacomeagain':
+            await msg.say('后续请关注我的朋友圈')
+            return
+        elif self.users[talker.contact_id][1] == 'bye':
+            return
+
         # 5. check the status of the talker. for special status do the special action
         scenario = self.users[talker.contact_id][1]
         character = self.users[talker.contact_id][0]
@@ -530,4 +536,4 @@ class DramaPlugin(WechatyPlugin):
         else:
             await self.soul(text, talker, scenario, character, memory, last_dialog, rules)
 
-        self.last_turn_memory[talker.contact_id][scenario][character][0] = [f'{character}说：“{text}”']
+        self.last_turn_memory[talker.contact_id][scenario][character][0] = f'{character}说：“{text}”'
