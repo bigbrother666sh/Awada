@@ -245,7 +245,7 @@ class DramaPlugin(WechatyPlugin):
             rules[name] = {}
             last_turn_memory_template[name] = {}
             for k in range(1, cols):
-                last_turn_memory_template[name][table.cell_value(0, k)] = []
+                last_turn_memory_template[name][table.cell_value(0, k)] = ["", ""]
                 rules[name][table.cell_value(0, k)] = {}
                 for i in range(1, nrows):
                     if table.cell_value(i,k):
@@ -339,7 +339,7 @@ class DramaPlugin(WechatyPlugin):
         if self.take_over:
             await msg.forward(self.temp_talker)
             await msg.say(f"msg has been forward to {self.temp_talker.name}")
-            self.last_turn_memory[self.temp_talker.contact_id][self.users[self.temp_talker.contact_id][1]][self.users[self.temp_talker.contact_id][0]].append(f'你说：“{msg.text()}”')
+            self.last_turn_memory[self.temp_talker.contact_id][self.users[self.temp_talker.contact_id][1]][self.users[self.temp_talker.contact_id][0]][1] = f'你说：“{msg.text()}”'
         else:
             await msg.say("send help to me to check what you can do")
 
@@ -381,7 +381,7 @@ class DramaPlugin(WechatyPlugin):
         self.logger.info(f"entities:{','.join(info)}")
 
         # 2. memory reading
-        pre_prompt = rules['DESCRIPTION'] + '。'
+        pre_prompt = rules['DESCRIPTIONTEXT'] + '。'
         memory_text = ''
         if info:
             memory_squence = []
@@ -425,8 +425,13 @@ class DramaPlugin(WechatyPlugin):
 
         replies = ''
         for action in actions:
-            if action.startswith('S'):
-                reply = action[1:]
+            if action.startswith('SOLID'):
+                reply = action[5:]
+            elif action.startswith('TRANS'):
+                self.users[talker.contact_id][1] = action[5:]
+                if 'WELCOMEWORD' in self.scenarios[action[5:]].get(character, {}):
+                    await talker.say(self.scenarios[action[5:]][character]['WELCOMEWORD'])
+                return
             else:
                 prompt = pre_prompt + action + "说：“"
                 self.logger.info(prompt)
@@ -441,7 +446,7 @@ class DramaPlugin(WechatyPlugin):
             await talker.say(reply)
             replies += f'你说：“{reply}”'
 
-        self.last_turn_memory[talker.contact_id][scenario][character].append(replies)
+        self.last_turn_memory[talker.contact_id][scenario][character][1] = replies
 
         # 3. memory saving acording to MMrules
         if self.mmrules[intent]['bi'] == 'no':
@@ -469,18 +474,20 @@ class DramaPlugin(WechatyPlugin):
 
         # 3. new-user register and old-user session load
         """
-        A storyline mechanism should be here to judge and guide the transition between scenarios, which I will do in the future
-        welcome should also be a scenario
-        and there should be something program can learn when and how to bring user from one scenario to another
+        Now we have a first version of the storyline mechanism, 
+        which can realize automatic switching between scenarios. 
+        The code level only needs to define the initial state.
         """
         if talker.contact_id not in self.users.keys():
-            self.users[talker.contact_id] = ['张无忌', 'welcome']
+            self.users[talker.contact_id] = ['陌生人', 'welcome']
             self.user_memory[talker.contact_id] = {}
             self.last_turn_memory[talker.contact_id] = self.last_turn_memory_template
             #实际上这里是用talker.contact_id充当"局"的概念，即同样的游戏可能同时开好几局，所有的背景记忆是一样的，但是用户相关的记忆是要分开的。
             #因为这一次是单场景单角色，所以就相当于"一个用户是一句"了，所以用contact_id作为区分，假如是剧本啥这种，就可以用room_id
             await talker.say("先声明哈，我们之间的对话信息可能会被公开，介意的话请终止对话！\n"
                              "请您务必不要透露任何隐私信息，请您务发表不当言论")
+            if 'WELCOMEWORD' in self.scenarios['welcome'].get('陌生人', {}):
+                await talker.say(self.scenarios['welcome']['陌生人']['WELCOMEWORD'])
             return
 
         # 4. message pre-process
@@ -510,13 +517,8 @@ class DramaPlugin(WechatyPlugin):
         character = self.users[talker.contact_id][0]
         memory = self.user_memory[talker.contact_id]
         last_dialog = self.last_turn_memory[talker.contact_id][scenario][character]
-        rules = self.scenarios[scenario].get(character, {'DESCRIPTION':''})
+        rules = self.scenarios[scenario].get(character, {'DESCRIPTIONTEXT':''})
         self.temp_talker = talker
-
-        if scenario == 'welcome':
-            await talker.say("just the same as description in scenario yitiantulong")
-            self.users[talker.contact_id][1] = "yitiantulong"
-            return
 
         if self.take_over is True:
             await self.take_over_director.say(f"{character} in the {scenario} just say: {text}. pls reply directly here")
@@ -524,4 +526,4 @@ class DramaPlugin(WechatyPlugin):
         else:
             await self.soul(text, talker, scenario, character, memory, last_dialog, rules)
 
-        self.last_turn_memory[talker.contact_id][scenario][character] = [f'{character}说：“{text}”']
+        self.last_turn_memory[talker.contact_id][scenario][character][0] = [f'{character}说：“{text}”']
