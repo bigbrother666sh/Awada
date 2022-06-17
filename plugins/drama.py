@@ -353,7 +353,7 @@ class DramaPlugin(WechatyPlugin):
                 if _result['similarity'] > self.sensitive:
                     sentence = memory[fragments.index(_result)]['sentence']
                     if sentence not in last_dialog and sentence not in memory_text:
-                        memory_text += sentence['text']
+                        memory_text += sentence
 
         pre_prompt = pre_prompt + memory_text + ''.join(last_dialog) + character + "说：“" + text + "”"
 
