@@ -228,7 +228,7 @@ class DramaPlugin(WechatyPlugin):
         for name in data.sheet_names():
             table = data.sheet_by_name(name)
             nrows = table.nrows
-            if nrows < 2:
+            if nrows < 1:
                 continue
 
             for i in range(1, nrows):
@@ -318,9 +318,9 @@ class DramaPlugin(WechatyPlugin):
 
         if msg.text() == 'save':
             with open(os.path.join(self.config_url, 'users.json'), 'w', encoding='utf-8') as f:
-                json.dump(self.users, f)
+                json.dump(self.users, f, ensure_ascii=False)
             with open(os.path.join(self.config_url, 'user_memory.json'), 'w', encoding='utf-8') as f:
-                json.dump(self.user_memory, f)
+                json.dump(self.user_memory, f, ensure_ascii=False)
             # for director may change the people of scenarios during restart, so we donot save the last_turn_memory
             await msg.say(f"user status and memory has been saved in {self.config_url}. I'll read instead of create new till you delete the files")
             return
@@ -405,7 +405,8 @@ class DramaPlugin(WechatyPlugin):
             for entity in info:
                 selfmemory_squence += self.self_memory.get(entity, [])
             selfmemory_text = ''.join(set(selfmemory_squence))
-            pre_prompt = pre_prompt + "，你知道" + selfmemory_text + "于是"
+            if selfmemory_text:
+                pre_prompt = pre_prompt + "，你知道" + selfmemory_text + "于是"
 
         # 3. saving user's text as memory according to entity
         t = time.time()
