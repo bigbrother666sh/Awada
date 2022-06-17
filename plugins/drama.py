@@ -372,10 +372,10 @@ class DramaPlugin(WechatyPlugin):
         if len(last_dialog[0]) < len(character)+3:
             infos0, infos1 = self.nlu_info(text)
         else:
-            infos0, infos1 = self.nlu_info([last_dialog[0][len(character)+3:-1], text])
+            infos0, infos1 = self.nlu_info('，'.join([last_dialog[0][len(character)+3:-1], text]))
 
-        info0 = list(set(infos0[0] + infos0[1]))
-        info1 = list(set(infos1[0] + infos1[1]))
+        info0 = infos0[0]
+        info1 = infos1[0]
         if info1:
             info = info1
         else:
