@@ -369,7 +369,11 @@ class DramaPlugin(WechatyPlugin):
     async def soul(self, text: str, talker: Contact, scenario: str, character: str, memory: dict, last_dialog: list, rules:dict) -> None:
         # 1. understanding: intent judgment, focus information_extraction
         intent = self.nlu_intent(text)
-        infos0, infos1 = self.nlu_info([last_dialog[0][len(character)+3:-1], text])
+        if len(last_dialog[0]) < len(character)+3:
+            infos0, infos1 = self.nlu_info(text)
+        else:
+            infos0, infos1 = self.nlu_info([last_dialog[0][len(character)+3:-1], text])
+
         info0 = list(set(infos0[0] + infos0[1]))
         info1 = list(set(infos1[0] + infos1[1]))
         if info1:
