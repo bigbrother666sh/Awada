@@ -110,7 +110,7 @@ class DramaPlugin(WechatyPlugin):
                     output_suffix="",)
 
         engine_name = self.yuan.get_engine()
-        self.logger.info(f'with yuan engine:{engine_name},with temperature=1,max_tokens=200,topK=5,topP=1')
+        self.logger.info(f'with yuan engine:{engine_name},with temperature=1,max_tokens=200,topK=3,topP=0.9')
 
         # 7. last process
         self.gfw = DFAFilter()
@@ -452,7 +452,7 @@ class DramaPlugin(WechatyPlugin):
             return
 
         if msg.type() == MessageType.MESSAGE_TYPE_EMOTICON:
-            text = '嘿嘿'
+            text = '在么？'
         else:
             text = msg.text()
 

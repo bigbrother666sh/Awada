@@ -50,8 +50,8 @@ class Yuan:
                 output_prefix='答:',
                 output_suffix='\n\n',
                 append_output_prefix_to_query=False,
-                topK=5,
-                topP=1):
+                topK=3,
+                topP=0.9):
         
         self.examples = {}
         self.engine = engine

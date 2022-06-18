@@ -44,7 +44,7 @@ def submit_request(query,temperature,topP,topK,max_tokens,engine):
     headers=header_generation()
     url=SUBMIT_URL + "engine={0}&account={1}&data={2}&temperature={3}&topP={4}&topK={5}&tokensToGenerate={6}" \
                      "&type={7}".format(engine,ACCOUNT,query,temperature,topP,topK, max_tokens,"api")
-
+    time.sleep(1)
     response=rest_get(url,headers,30)
     response_text = json.loads(response.text)
     if response_text["flag"]:
