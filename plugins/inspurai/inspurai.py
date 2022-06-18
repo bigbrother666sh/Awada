@@ -43,15 +43,15 @@ class Yuan:
 
     def __init__(self, 
                 engine='base_10B',
-                temperature=0.9,
-                max_tokens=100,
+                temperature=1,
+                max_tokens=200,
                 input_prefix='',
                 input_suffix='\n',
                 output_prefix='答:',
                 output_suffix='\n\n',
                 append_output_prefix_to_query=False,
-                topK=1,
-                topP=0.9):
+                topK=5,
+                topP=1):
         
         self.examples = {}
         self.engine = engine
