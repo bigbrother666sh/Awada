@@ -388,7 +388,7 @@ class DramaPlugin(WechatyPlugin):
                             f'generation failed with the following input:{character},{intent},{action},{text},{scenario}')
                         continue
                     repeat_check = self.sim([[reply, last_dialog[1][4:-1]]])
-                    if repeat_check['similarity'] < 0.9:
+                    if repeat_check[0]['similarity'] < 0.9:
                         break
                 if reply == "somethingwentwrongwithyuanservice":
                     self.logger.warning(f'Yuan is out of service, failed from:{character},{talker.name},{text},{scenario}')
