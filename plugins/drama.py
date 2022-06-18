@@ -473,8 +473,8 @@ class DramaPlugin(WechatyPlugin):
         # 5. check the status of the talker. for special status do the special action
         scenario = self.users[talker.contact_id][1]
         character = self.users[talker.contact_id][0]
-        memory = self.user_memory[talker.contact_id]
-        last_dialog = self.last_turn_memory[talker.contact_id][scenario][character]
+        memory = self.user_memory.get(talker.contact_id, [])
+        last_dialog = self.last_turn_memory.get(talker.contact_id).get(scenario).get(character)
         rules = self.scenarios[scenario].get(character, {'DESCRIPTIONTEXT':''})
         self.temp_talker = talker
 
