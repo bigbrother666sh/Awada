@@ -30,7 +30,7 @@ class DramaPlugin(WechatyPlugin):
             options: Optional[WechatyPluginOptions] = None,
             configs: str = 'drama_configs',
             port: str = '5005',
-            sensitivity: float = 0.5
+            sensitivity: float = 0.7
     ) -> None:
 
         super().__init__(options)
@@ -82,14 +82,15 @@ class DramaPlugin(WechatyPlugin):
             self.users = {}
 
         # 5. load scenario rule-table
-        self.scenarios, self.last_turn_memory_template = self._load_scenarios()
+        self.scenarios = self._load_scenarios()
         if self.scenarios is None:
             raise RuntimeError('Drada scenarios.xlsx not valid, pls refer to above info and try again. make sure at lease one scenario is well defined.')
 
         self.last_turn_memory = {}
         if self.user_memory:
-            for key in self.user_memory.keys():
-                self.last_turn_memory[key] = self.last_turn_memory_template
+            with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
+                for key in self.user_memory.keys():
+                    self.last_turn_memory[key] = json.load(f)
 
         # 6. initialize & test the rasa nlu server and yuan-api
         self.rasa_url = 'http://localhost:'+port+'/model/parse'
@@ -121,7 +122,7 @@ class DramaPlugin(WechatyPlugin):
         self.take_over_director: wechaty.Contact
         self.sensitive = sensitivity
 
-        self.logger.info('Drada plugin init success')
+        self.logger.info(f'Drada plugin init success. sensitivity:{sensitivity}')
 
     def _file_check(self) -> bool:
         """check the config file"""
@@ -207,13 +208,13 @@ class DramaPlugin(WechatyPlugin):
             for i in range(1, nrows):
                 if not table.cell_value(i,0):
                     self.logger.warning('cell of the first column is empty in scenario.xlsx,this is not allowed')
-                    return None, None
+                    return None
 
             cols = table.ncols
             for k in range(1, cols):
                 if not table.cell_value(0,k):
                     self.logger.warning('cell of the first row is empty in scenario.xlsx,this is not allowed')
-                    return None, None
+                    return None
 
             rules[name] = {}
             last_turn_memory_template[name] = {}
@@ -224,8 +225,10 @@ class DramaPlugin(WechatyPlugin):
                     if table.cell_value(i,k):
                         rules[name][table.cell_value(0, k)][table.cell_value(i, 0)] = table.cell_value(i, k)
 
-        return rules, last_turn_memory_template
+        with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'w', encoding='utf-8') as f:
+            json.dump(last_turn_memory_template, f, ensure_ascii=False)
 
+        return rules
 
     async def director_message(self, msg: Message):
         """
@@ -244,7 +247,7 @@ class DramaPlugin(WechatyPlugin):
                           "reload mmrules -- reload MMrules.xlsx \n"
                           "reload memory -- reload memory.txt \n"
                           "reload scenarios -- reload scenarios.xlsx \n"
-                          "chang sensitive to0.xx -- change the memory match sensitive(0~1 higher is stricter)\n"
+                          "change sensitive to0.xx -- change the memory match sensitive(0~1 higher is stricter)\n"
                           "save -- save the users status and users memory so that game will continue instead of restart\n"
                           "take over -- take over the AI for a time \n"
                           "stop take over -- stop the take_over")
@@ -279,18 +282,16 @@ class DramaPlugin(WechatyPlugin):
             return
 
         if msg.text().startswith('reload scenarios'):
-            scenarios, last_turn_memory_template = self._load_scenarios()
+            scenarios = self._load_scenarios()
             if scenarios is None:
                 await msg.say("scenarios.xlsx is empty, so I will not reload scenarios. No change happened")
-            elif last_turn_memory_template.keys() != self.last_turn_memory_template.keys():
-                await msg.say("You should not change peoples in the scenarios during program is running, you have to restart to update")
             else:
                 self.scenarios = scenarios
-                self.last_turn_memory_template = last_turn_memory_template
+                await msg.say("warning: any change of scenarios or characters during program running may cause potentially fatal error！")
                 await msg.say("scenarios has been updated")
             return
 
-        if msg.text().startswith("chang sensitive to"):
+        if msg.text().startswith("change sensitive to"):
             try:
                 sensitive = float(msg.text()[18:])
             except:
@@ -348,10 +349,10 @@ class DramaPlugin(WechatyPlugin):
         memory_text = ''
         if memory:
             similarity = [[text, fragment['text']] for fragment in memory]
-            fragments = self.sim(similarity)
-            for _result in fragments:
+            results = self.sim(similarity)
+            for _result in results:
                 if _result['similarity'] > self.sensitive:
-                    sentence = memory[fragments.index(_result)]['sentence']
+                    sentence = memory[results.index(_result)]['sentence']
                     if sentence not in last_dialog and sentence not in memory_text:
                         memory_text += sentence
 
@@ -359,8 +360,8 @@ class DramaPlugin(WechatyPlugin):
 
         if self.mmrules[intent]['read'] == 'yes':
             similarity = [[text, fragment] for fragment in self.self_memory]
-            fragments = self.sim(similarity)
-            selfmemory_text = ''.join([_result['text2'] for _result in fragments if _result['similarity'] > self.sensitive])
+            results = self.sim(similarity)
+            selfmemory_text = ''.join([_result['text2'] for _result in results if _result['similarity'] > self.sensitive])
             if selfmemory_text:
                 pre_prompt = pre_prompt + "，你知道" + selfmemory_text + "于是"
 
@@ -433,9 +434,12 @@ class DramaPlugin(WechatyPlugin):
         if talker.contact_id not in self.users:
             self.users[talker.contact_id] = ['陌生人', 'welcome']
             self.user_memory[talker.contact_id] = []
-            self.last_turn_memory[talker.contact_id] = self.last_turn_memory_template
-            #实际上这里是用talker.contact_id充当"局"的概念，即同样的游戏可能同时开好几局，所有的背景记忆是一样的，但是用户相关的记忆是要分开的。
+            with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
+                self.last_turn_memory[talker.contact_id] = json.load(f)
+            """
+            实际上这里是用talker.contact_id充当"局"的概念，即同样的游戏可能同时开好几局，所有的背景记忆是一样的，但是用户相关的记忆是要分开的。
             #因为这一次是单场景单角色，所以就相当于"一个用户是一句"了，所以用contact_id作为区分，假如是剧本啥这种，就可以用room_id
+            """
             await talker.say("先声明哈，我们之间的对话信息可能会被公开，介意的话请终止对话！\n"
                              "请您务必不要透露任何隐私信息，请您务发表不当言论")
             if 'WELCOMEWORD' in self.scenarios['welcome'].get('陌生人', {}):
@@ -473,9 +477,9 @@ class DramaPlugin(WechatyPlugin):
         # 5. check the status of the talker. for special status do the special action
         scenario = self.users[talker.contact_id][1]
         character = self.users[talker.contact_id][0]
-        memory = self.user_memory.get(talker.contact_id, [])
-        last_dialog = self.last_turn_memory.get(talker.contact_id).get(scenario).get(character)
-        rules = self.scenarios[scenario].get(character, {'DESCRIPTIONTEXT':''})
+        memory = self.user_memory[talker.contact_id]
+        last_dialog = self.last_turn_memory[talker.contact_id][scenario][character]
+        rules = self.scenarios[scenario].get(character, {'DESCRIPTIONTEXT': ''})
         self.temp_talker = talker
 
         if self.take_over is True:
