@@ -247,7 +247,7 @@ class DramaPlugin(WechatyPlugin):
                           "chang sensitive to0.xx -- change the memory match sensitive(0~1 higher is stricter)\n"
                           "save -- save the users status and users memory so that game will continue instead of restart\n"
                           "take over -- take over the AI for a time \n"
-                          "take over off -- stop the take_over")
+                          "stop take over -- stop the take_over")
             return
         # 3.functions
         if msg.text().startswith('reload directors'):
@@ -319,7 +319,7 @@ class DramaPlugin(WechatyPlugin):
             await msg.say("ok your turn. to give the wheel back to me send: take over off")
             return
 
-        if msg.text().startswith('take over off'):
+        if msg.text().startswith('stop take over'):
             self.take_over = False
             await msg.say("I will take the talk again. to take over send: take over")
             return
