@@ -1,4 +1,5 @@
-🔥🔥🔥运营日预告：*6月18~19日* 🔥🔥🔥
+🔥🔥🔥 运营日预告：🔥🔥🔥 
+本次运营已经结束，敬请关注后续预告（或关注阿瓦达啃大瓜🍉的朋友圈）
 
 本次运营活动灵感来自挪威剧作家易卜生名著《海达·高布乐》，阿瓦达将按照TA的意图全新演绎剧中女主角——海达。
 
@@ -58,11 +59,21 @@ Version：Pre-release 0.1
 
 ### rasa3.0
 
-本项目使用rasa3.0进行对话意图识别，请参考我的另一个[repo](https://github.com/bigbrother666sh/rasa-paddlenlp-ernie/tree/deploy) 或者 [rasa官网](https://rasa.com/docs/)。
+本项目使用rasa3.0进行对话意图识别，请参考我的另一个[repo](https://github.com/bigbrother666sh/rasa-paddlenlp-ernie) 或者 [rasa官网](https://rasa.com/docs/)。
 
-### 百度飞桨（PaddlePaddle）PaddleNLP UIE
+~~### 百度飞桨（PaddlePaddle）PaddleNLP UIE~~
+### 百度飞桨（PaddlePaddle）PaddleNLP TaskFlow
 
-本项目使用Paddlenlp的通用信息抽取UIE预训练模型进行实体识别，详情请参考[这里](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/model_zoo/uie)
+~~本项目使用Paddlenlp的通用信息抽取UIE预训练模型进行实体识别，详情请参考[这里](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/model_zoo/uie)~~
+
+实践下来用这个做记忆索引太难用了，不是UIE不好（相反，我个人感觉很惊艳），主要是在主题域对话的应用场景中，很难准确的提炼schema……真的很难，而且即便提炼好了，还得标注，这个工作量也很大……
+
+取而代之，目前使用PaddlePaddle的SimBert文本相似度，整个机制变为，对于MMrules规定需要记忆的intent，记忆所有用户对话，否则不记忆（但最后一句是会记忆的）……读取的时候则是按相似度阀值（默认0.7，但可以初始化时进行设定，
+甚至导演账号可以在程序运行时发指令更新）……
+
+新版的PaddleNLP（2.3.4）直接把Simbert相似度计算集成在taskflow中了，基本一行命令就能搞定，非常简单，而且系统开销也大大降低了……
+
+（具体见https://github.com/PaddlePaddle/PaddleNLP/blob/develop/docs/model_zoo/taskflow.md#%E6%96%87%E6%9C%AC%E7%9B%B8%E4%BC%BC%E5%BA%A6）
 
 ### Python Wechaty
 
