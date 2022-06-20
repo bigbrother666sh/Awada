@@ -378,6 +378,7 @@ class DramaPlugin(WechatyPlugin):
                 self.users[talker.contact_id][1] = action[5:]
                 if 'WELCOMEWORD' in self.scenarios[action[5:]].get(character, {}):
                     await talker.say(self.scenarios[action[5:]][character]['WELCOMEWORD'])
+                    self.last_turn_memory[talker.contact_id][action[5:]][character] = f"你说：“{self.scenarios[action[5:]][character]['WELCOMEWORD']}”"
                 return
             else:
                 prompt = pre_prompt + action + "说：“"
@@ -444,6 +445,7 @@ class DramaPlugin(WechatyPlugin):
                              "请您务必不要透露任何隐私信息，请您务发表不当言论")
             if 'WELCOMEWORD' in self.scenarios['welcome'].get('陌生人', {}):
                 await talker.say(self.scenarios['welcome']['陌生人']['WELCOMEWORD'])
+                self.last_turn_memory[talker.contact_id]['welcome']['陌生人'] = f"你说：“{self.scenarios['welcome']['陌生人']['WELCOMEWORD']}”"
             return
 
         # 4. message pre-process
