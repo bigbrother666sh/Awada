@@ -1,0 +1,1 @@
+curl -i -k 'https://wenxin.baidu.com/younger/portal/api/oauth/token?grant_type=client_credentials&client_id={Odw8AGlLO37klZhXWzleqCmaqEjelC6B}&client_secret={pb3c64fSiQYLNSbu5e15GTdeXK17G9Zv}' -H 'Content-Type:application/x-www-form-urlencoded'
