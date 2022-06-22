@@ -38,7 +38,7 @@ class UieTestPlugin(WechatyPlugin):
         self.logger = get_logger(self.name, log_file)
 
         # 3. check and load metadata
-        schema = [{'作品': ['名称', '作者', '[看过，没看过]', '情感倾向[正向，负向]']}, {'作者': ['名字', '作品', '[喜欢，不喜欢]']}, {'角色': ['名字', '作品', '评价']}]
+        schema = [{'作品': ['名称', '作者', '观点词']}, {'作者': ['名字', '作品', '观点词']}, {'角色': ['名字', '作品', '观点词']}]
 
         try:
             self.uie = Taskflow('information_extraction', schema=schema)
