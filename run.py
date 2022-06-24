@@ -3,7 +3,6 @@ import os
 
 from wechaty import Wechaty, WechatyOptions
 from plugins.drama import DramaPlugin
-from plugins.uiememorytry import UieTestPlugin
 
 if __name__ == "__main__":
     options = WechatyOptions(
@@ -12,6 +11,5 @@ if __name__ == "__main__":
     bot = Wechaty(options)
     bot.use([
         DramaPlugin(),
-        UieTestPlugin()
     ])
     asyncio.run(bot.start())
