@@ -36,7 +36,7 @@ class DramaPlugin(WechatyPlugin):
         # 1. create the cache_dir
         self.config_url = configs
         self.config_files = os.listdir(self.config_url)
-        if len(self.config_files) < 5:
+        if len(self.config_files) < 4:
             raise RuntimeError('Drada plugin config_files not enough, pls add and try again')
 
         self.cache_dir = f'./.{self.name}'
@@ -246,6 +246,10 @@ class DramaPlugin(WechatyPlugin):
                     self.logger.warning('cell of the first row is empty in scenario.xlsx,this is not allowed')
                     return None
 
+            if 'DESCRIPTIONTEXT' not in table.col_values(0) or 'DEFAULT' not in table.col_values(0):
+                self.logger.warning(f'DESCRIPTIONTEXT and DEFAULT must in every scenario!!! sheet-{name} format wrong')
+                return None
+
             rules[name] = {}
             last_turn_memory_template[name] = {}
             for k in range(1, cols):
@@ -254,10 +258,6 @@ class DramaPlugin(WechatyPlugin):
                 for i in range(1, nrows):
                     if table.cell_value(i,k):
                         rules[name][table.cell_value(0, k)][table.cell_value(i, 0)] = table.cell_value(i, k)
-
-            if 'DESCRIPTIONTEXT' not in rules[name] or 'DEFAULT' not in rules[name]:
-                self.logger.warning(f'DESCRIPTIONTEXT and DEFAULT must in every scenario!!! sheet{name} format wrong')
-                return None
 
         with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'w', encoding='utf-8') as f:
             json.dump(last_turn_memory_template, f, ensure_ascii=False)
