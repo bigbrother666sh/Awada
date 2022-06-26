@@ -345,8 +345,6 @@ class DramaPlugin(WechatyPlugin):
                 json.dump(self.users, f, ensure_ascii=False)
             with open(os.path.join(self.config_url, 'self_memory.json'), 'w', encoding='utf-8') as f:
                 json.dump(self.self_memory, f, ensure_ascii=False)
-            with open(os.path.join(self.config_url, 'user_memory.json'), 'w', encoding='utf-8') as f:
-                json.dump(self.user_memory, f, ensure_ascii=False)
             with open(os.path.join(self.config_url, 'last_turn_memory.json'), 'w', encoding='utf-8') as f:
                 json.dump(self.last_turn_memory, f, ensure_ascii=False)
 
@@ -380,7 +378,7 @@ class DramaPlugin(WechatyPlugin):
         _result = json.loads(_test_res.data)
         return _result['intent']['name']
 
-    async def soul(self, intent: str, talker: Contact, scenario: str, character: str, memory: list, last_dialog: str, rules: dict, last_dialog_turn: int) -> None:
+    async def soul(self, intent: str, talker: Contact, scenario: str, character: str, memory: list, last_dialog: str, rules: dict) -> None:
         # 1. understanding: focus and topic information_extraction
         ners, topics = self.nlu_topic([last_dialog])
         ner = ners[0]
@@ -417,6 +415,8 @@ class DramaPlugin(WechatyPlugin):
                     memory_text = ''.join(match[-2:])
                 else:
                     memory_text = ''.join(match)
+            else:
+                memory_text = memory[-1]['text']
 
         pre_prompt = rules['DESCRIPTIONTEXT'] + '。' + memory_text + last_dialog
 
@@ -439,7 +439,6 @@ class DramaPlugin(WechatyPlugin):
 
         # 3. act the action in sequence
         pre_prompt = pre_prompt + "，你"
-
         actions = rules.get(intent, rules['DEFAULT']).split('\n')
 
         replies = []
@@ -453,7 +452,8 @@ class DramaPlugin(WechatyPlugin):
                     await talker.say(next_rules['WELCOMEWORD'])
                     self.last_turn_memory[talker.contact_id][action[5:]][character]["text"] = [f"你说：“{next_rules['WELCOMEWORD']}”"]
                     self.last_turn_memory[talker.contact_id][action[5:]][character]["talker"] = ["你"]
-                    memory.append({"text": last_dialog, "ner": ner, "topic": topics})
+                    if ner:
+                        memory.append({"text": last_dialog, "ner": ner, "topic": topic})
                 return
             elif action.startswith('HOLD'):
                 try:
@@ -480,8 +480,6 @@ class DramaPlugin(WechatyPlugin):
                     self.logger.warning(f'Yuan may out of service')
                     continue
 
-            if len(self.last_turn_memory[talker.contact_id][scenario][character]["talker"]) != last_dialog_turn:
-                return
             await talker.say(reply)
             self.logger.info(f'你说：“{reply}”')
             replies.append(reply)
@@ -489,7 +487,8 @@ class DramaPlugin(WechatyPlugin):
         self.logger.info("----------------------------\n")
 
         # 4. memory saving
-        memory.append({"text": last_dialog, "ner": ner, "topic": topics})
+        if ner:
+            memory.append({"text": last_dialog, "ner": ner, "topic": topic})
         self.last_turn_memory[talker.contact_id][scenario][character]["text"] = [f"你说：“{'。'.join(replies)}”"]
         self.last_turn_memory[talker.contact_id][scenario][character]["talker"] = ["你"]
 
@@ -526,7 +525,7 @@ class DramaPlugin(WechatyPlugin):
             另外这个案例中，因为只是单场景、单character，所以我们直接用talkerid当做games的标记
             """
             await talker.say("先声明哈，我们之间的对话信息可能会被公开，介意的话请终止对话！\n"
-                             "请您务必不要透露任何隐私信息，请您务发表不当言论")
+                             "请您务必不要透露任何隐私信息，请您勿发表不当言论")
             if 'WELCOMEWORD' in self.scenarios['welcome'].get('陌生人', {}):
                 await talker.say(self.scenarios['welcome']['陌生人']['WELCOMEWORD'])
                 self.last_turn_memory[talker.contact_id]['welcome']['陌生人']["text"] = [f"你说：“{self.scenarios['welcome']['陌生人']['WELCOMEWORD']}”"]
@@ -571,14 +570,30 @@ class DramaPlugin(WechatyPlugin):
         self.last_turn_memory[talker.contact_id][scenario][character]["talker"].append(character)
         last_dialog = ''.join(self.last_turn_memory[talker.contact_id][scenario][character]["text"])
 
+        # 6. check if director hand over
         self.temp_talker = talker
         if self.take_over is True:
             await self.take_over_director.say(f"{character} in the {scenario} just say: {text}. pls reply directly here")
             await self.take_over_director.say(f"whole turn dialog: {last_dialog}")
-        else:
-            rules = self.scenarios[scenario].get(character, list(self.scenarios[scenario].values())[0])
-            last_dialog_turn = len(self.last_turn_memory[talker.contact_id][scenario][character]["talker"])
-            memory = self.user_memory[talker.contact_id][scenario]
-            intent = self.nlu_intent(text)
-            self.logger.info(f"intent:{intent}")
-            await self.soul(intent, talker, scenario, character, memory, last_dialog, rules, last_dialog_turn)
+            return
+
+        # 7. AI process
+        rules = self.scenarios[scenario].get(character, list(self.scenarios[scenario].values())[0])
+        memory = self.user_memory[talker.contact_id][scenario]
+        intent = self.nlu_intent(text)
+        """
+        for Rasa cannot guarantee precision at this stage, we need to partially correct the intent,
+        This part needs to be enriched
+        """
+        if len(text) > 3:
+            _i = 0
+            for _memory in memory:
+                if text in _memory["text"]:
+                    _i += 1
+                    if _i > 2:
+                        intent = 'challenge'
+        self.logger.info(f"intent:{intent}")
+        if intent == 'continuetosay':
+            return
+
+        await self.soul(intent, talker, scenario, character, memory, last_dialog, rules)
