@@ -45,7 +45,20 @@ Version：Pre-release 0.1
 
 ![img](asset/aisoul.png)
 
-如果您有优秀的创意，也欢迎直接与我联系（weixin：baohukeji）。
+整体上我的创作步骤建议是：
+
+0、先定义场景背景，然后初步设想这个场景下用户可能与AI的对话意图以及AI的话题focus，并自己举几个例子；
+
+1、用这少量的例子先跑rasa模型，来回几次后，确定第一版本的intents，最终使用rasa test拿到intent report；
+
+2、根据intents，再来写scenario.xlsx, 注意每一个intent的rule需要考虑其他intent被误识别混入的情况，所以这一步应该对照上一步得到intent report;
+
+3、找几个朋友（丢脸也不会在乎的那种）来试，根据实际对话数据重复上面的步骤，你需要反复的训练rasa模型和finetune uie模型；
+
+4、扩大用户范围，不断重复上述过程……渐渐的，你会发现你的bot越来越聪明。
+
+
+**如果你觉得上述步骤太复杂但你有优秀的创意，欢迎直接与我联系（weixin：baohukeji）**
 
 ## 工程部署（for engineer）
 
@@ -61,19 +74,14 @@ Version：Pre-release 0.1
 
 本项目使用rasa3.0进行对话意图识别，请参考我的另一个[repo](https://github.com/bigbrother666sh/rasa-paddlenlp-ernie) 或者 [rasa官网](https://rasa.com/docs/)。
 
-~~### 百度飞桨（PaddlePaddle）PaddleNLP UIE~~
-### 百度飞桨（PaddlePaddle）PaddleNLP TaskFlow
+### 百度飞桨（PaddlePaddle）PaddleNLP UIE
 
-~~本项目使用Paddlenlp的通用信息抽取UIE预训练模型进行实体识别，详情请参考[这里](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/model_zoo/uie)~~
+最新版本的记忆机制换回使用Paddlenlp的通用信息抽取UIE预训练模型进行实体识别，详情请参考[这里](https://github.com/PaddlePaddle/PaddleNLP/tree/develop/model_zoo/uie)
 
-实践下来用这个做记忆索引太难用了，不是UIE不好（相反，我个人感觉很惊艳），主要是在主题域对话的应用场景中，很难准确的提炼schema……真的很难，而且即便提炼好了，还得标注，这个工作量也很大……
+（release0.1版本使用的paddlenlp的simbert 短语匹配模式）
 
-取而代之，目前使用PaddlePaddle的SimBert文本相似度，整个机制变为，对于MMrules规定需要记忆的intent，记忆所有用户对话，否则不记忆（但最后一句是会记忆的）……读取的时候则是按相似度阀值（默认0.7，但可以初始化时进行设定，
-甚至导演账号可以在程序运行时发指令更新）……
-
-新版的PaddleNLP（2.3.4）直接把Simbert相似度计算集成在taskflow中了，基本一行命令就能搞定，非常简单，而且系统开销也大大降低了……
-
-（具体见https://github.com/PaddlePaddle/PaddleNLP/blob/develop/docs/model_zoo/taskflow.md#%E6%96%87%E6%9C%AC%E7%9B%B8%E4%BC%BC%E5%BA%A6）
+整体来看rasa的意图识别在主题域这种偏开放的场景下是有点羸弱的（不过这已经是我能找到的唯一能用的了，看来学界在这个方面是有点缺乏），飞桨的UIE基本上也需要一定的语料进行finetune才能获得比较好的成果，另外schema的命名也有一点讲究，比如"作品名称"就比
+"作品"的识别率更高……只能说目前阶段的人工智能有人类思维的特性，但远达不到人类思维的能力。
 
 ### Python Wechaty
 

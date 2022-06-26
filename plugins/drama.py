@@ -470,13 +470,13 @@ class DramaPlugin(WechatyPlugin):
                 self.logger.info(prompt)
                 for i in range(7):
                     reply = self.yuan.submit_API(prompt, trun="”")
-                    if reply is None:
+                    if reply == '':
                         self.logger.warning(f'generation failed {str(i+1)} times.')
                         continue
                     if len(reply) <= 5 or reply not in last_dialog:
                         break
 
-                if reply is None or reply == "somethingwentwrongwithyuanservice":
+                if reply == '' or reply == "somethingwentwrongwithyuanservice":
                     self.logger.warning(f'Yuan may out of service')
                     continue
 
