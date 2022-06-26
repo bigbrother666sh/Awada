@@ -69,7 +69,7 @@ class DramaPlugin(WechatyPlugin):
             self.logger.warning('there must be at least one in the focus.json and no empty should be, pls retry')
             raise RuntimeError('Drama focus.json not valid, pls refer to above info and try again')
 
-        self.uie = Taskflow('information_extraction', schema=schema)
+        self.uie = Taskflow('information_extraction', schema=schema, task_path='uie/checkpoint/model_best')
 
         if "self_memory.json" in self.config_files:
             with open(os.path.join(self.config_url, 'self_memory.json'), 'r', encoding='utf-8') as f:
