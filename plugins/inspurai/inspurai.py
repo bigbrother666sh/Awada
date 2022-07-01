@@ -4,7 +4,7 @@
 # import json
 import os
 import uuid
-from url_config import submit_request, reply_request
+from plugins.inspurai.url_config import submit_request, reply_request
 
 
 def set_yuan_account(user, phone):
