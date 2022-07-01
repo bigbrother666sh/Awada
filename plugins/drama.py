@@ -373,10 +373,10 @@ class DramaPlugin(WechatyPlugin):
         selfmemory_text = ''
         if topic:
             for shcema in self.schema:
-                if not topic[shcema]:
+                if not topic.get(shcema, []):
                     continue
                 for _memory in self.self_memory:
-                    if topic[shcema].intersection(_memory[shcema]):
+                    if topic[shcema].intersection(_memory.get(shcema, set([]))):
                         selfmemory_text += _memory['text']
                 if selfmemory_text:
                     break
@@ -384,12 +384,12 @@ class DramaPlugin(WechatyPlugin):
         memory_text = ''
         if topic:
             for shcema in self.schema:
-                if not topic[shcema]:
+                if not topic.get(shcema, []):
                     continue
                 for _memory in memory:
-                    if topic[shcema].intersection(_memory[shcema]):
+                    if topic[shcema].intersection(_memory.get(shcema, set([]))):
                         memory_text += _memory['text']
-                if selfmemory_text:
+                if memory_text:
                     break
 
         # 3. combine to the pre_prompt
