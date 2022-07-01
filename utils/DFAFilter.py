@@ -75,7 +75,6 @@ class DFAFilter:
                         self.logger.warning(f"检测到敏感词：{''.join(res)}")
                         return ''.join(res)
             start += 1
-        self.logger.info(f'未检测到敏感词')
         return None
 
 
