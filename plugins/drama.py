@@ -405,7 +405,8 @@ class DramaPlugin(WechatyPlugin):
                 if not topic.get(shcema, []):
                     continue
                 for ner in list(topic[shcema]):
-                    actions.extend(rules.get(ner, '').split('\n'))
+                    if rules.get(ner):
+                        actions.extend(rules.get(ner).split('\n'))
                 if actions:
                     break
 
@@ -551,8 +552,8 @@ class DramaPlugin(WechatyPlugin):
         # 7. AI process
         rules = self.scenarios[scenario].get(character, {})
         memory = self.user_memory[talker.contact_id][scenario]
-        intent = self.intent.predict(text)
-        self.logger.info(f"intent:{intent}")
+        intent, conf = self.intent.predict(text)
+        self.logger.info(f"intent:{intent}, confidence:{conf}")
         """
         for Rasa cannot guarantee precision at this stage, we need to partially correct the intent,
         This part needs to be enriched
