@@ -59,7 +59,6 @@ class DFAFilter:
                 self.add(keyword.strip())
 
     def filter(self, message):
-        self.logger.info(f'文本：{message}')
         message = message.lower()
         start = 0
         while start < len(message):
@@ -72,7 +71,7 @@ class DFAFilter:
                         res.append(char)
                     else:
                         res.append(char)
-                        self.logger.warning(f"检测到敏感词：{''.join(res)}")
+                        self.logger.warning(f"文本：{message}'，检测到敏感词：{''.join(res)}")
                         return ''.join(res)
             start += 1
         return None

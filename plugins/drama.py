@@ -402,7 +402,7 @@ class DramaPlugin(WechatyPlugin):
         actions = []
         if topic:
             for shcema in self.schema:
-                if not topic[shcema]:
+                if not topic.get(shcema, []):
                     continue
                 for ner in list(topic[shcema]):
                     actions.extend(rules.get(ner, '').split('\n'))
