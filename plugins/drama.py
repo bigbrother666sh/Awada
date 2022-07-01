@@ -157,7 +157,7 @@ class DramaPlugin(WechatyPlugin):
         for _result in results:
             topic = {}
             for key, value in _result.items():
-                topic[key] = set([entity['text'] for entity in value if entity['probability'] > 0.64])
+                topic[key] = set([entity['text'] for entity in value if entity['probability'] > 0.58])
             topics.append(topic)
         return topics
 
