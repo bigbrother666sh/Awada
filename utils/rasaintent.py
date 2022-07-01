@@ -25,6 +25,7 @@ class RasaIntent:
         os.makedirs(self.cache_dir, exist_ok=True)
 
         # 2. save the log info into <plugin_name>.log file
+        log_formatter = logging.Formatter(fmt='%(levelname)s - %(message)s')
         self.logger = logging.getLogger('rasaintent')
         self.logger.handlers = []
         self.logger.setLevel('INFO')
@@ -33,6 +34,7 @@ class RasaIntent:
 
         file_handler = logging.FileHandler(log_file, 'a', encoding='utf-8')
         file_handler.setLevel('INFO')
+        file_handler.setFormatter(log_formatter)
         self.logger.addHandler(file_handler)
 
         # 3. create the http client

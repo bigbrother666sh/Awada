@@ -376,9 +376,7 @@ class DramaPlugin(WechatyPlugin):
                 if not topic.get(shcema, []):
                     continue
                 for _memory in self.self_memory:
-                    print(shcema)
                     if topic[shcema].intersection(_memory.get(shcema, set())):
-                        print(_memory)
                         selfmemory_text += _memory['text']
                 if selfmemory_text:
                     break
@@ -573,5 +571,7 @@ class DramaPlugin(WechatyPlugin):
             await msg.say('[666]记得要去看哦~')
         elif intent in ['challenge', 'challenge_bye']:
             await msg.say('呵呵……人类[困]')
+        elif intent == 'continuetosay':
+            return
         else:
             await self.soul(text, talker, scenario, character, memory, last_dialog, rules)

@@ -77,7 +77,7 @@ class DFAFilter:
                         res.append(char)
                     else:
                         res.append(char)
-                        self.logger.warning(f"文本：{message}'，检测到敏感词：{''.join(res)}")
+                        self.logger.info(f"文本：{message}'，检测到敏感词：{''.join(res)}")
                         return ''.join(res)
             start += 1
         return None
