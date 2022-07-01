@@ -376,7 +376,9 @@ class DramaPlugin(WechatyPlugin):
                 if not topic.get(shcema, []):
                     continue
                 for _memory in self.self_memory:
-                    if topic[shcema].intersection(_memory.get(shcema, set([]))):
+                    print(shcema)
+                    if topic[shcema].intersection(_memory.get(shcema, set())):
+                        print(_memory)
                         selfmemory_text += _memory['text']
                 if selfmemory_text:
                     break
@@ -387,7 +389,7 @@ class DramaPlugin(WechatyPlugin):
                 if not topic.get(shcema, []):
                     continue
                 for _memory in memory:
-                    if topic[shcema].intersection(_memory.get(shcema, set([]))):
+                    if topic[shcema].intersection(_memory.get(shcema, set())):
                         memory_text += _memory['text']
                 if memory_text:
                     break

@@ -61,9 +61,9 @@ class RasaIntent:
         _intent = _result['intent']['name']
         _conf = _result['intent']['confidence']
         if _conf >= 0.5:
-            self.logger.info(f'text: {text}\nIntent: {_intent} confidence: {_conf}')
+            self.logger.info(f'text: {text}---Intent: {_intent} confidence: {_conf}')
         else:
-            self.logger.warning(f'text: {text}\nIntent: {_intent} confidence: {_conf}')
+            self.logger.warning(f'text: {text}---Intent: {_intent} confidence: {_conf}')
         return _intent, _conf
 
 
