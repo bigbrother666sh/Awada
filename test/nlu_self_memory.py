@@ -30,6 +30,8 @@ if len(self_memory_text) == 0:
 topics = nlu_topic(self_memory_text)
 self_memory = []
 for i in range(len(self_memory_text)):
+    print('text:', self_memory_text[i])
+    print('topic:', topics[i])
     self_memory.append({**{"text": self_memory_text[i]}, **topics[i]})
 
 pprint(self_memory)

@@ -26,14 +26,14 @@ pprint(rules)
 
 print("test '海达':")
 actions = []
-actions.extend(rules['welcome'].get('海达', '').split('\n'))
+actions.extend(rules['welcome']['陌生人'].get('海达', '').split('\n'))
 if not actions:
     actions = ['']
 print(actions)
 
 print("test '侯赛因':")
 actions = []
-actions.extend(rules['welcome'].get('侯赛因', '').split('\n'))
+actions.extend(rules['welcome']['陌生人'].get('侯赛因', '').split('\n'))
 if not actions:
     actions = ['']
 print(actions)
