@@ -448,8 +448,8 @@ class DramaPlugin(WechatyPlugin):
                     if len(reply) <= 5 or reply not in last_dialog:
                         break
 
-                if reply == '' or reply == "somethingwentwrongwithyuanservice":
-                    self.logger.warning(f'Yuan may out of service')
+                if reply == '' or reply == "somethingwentwrongwithyuanservice" or reply == "请求异常，请重试":
+                    self.logger.warning(f'Yuan may out of service, {reply}')
                     continue
 
             await talker.say(reply)

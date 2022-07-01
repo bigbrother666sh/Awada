@@ -25,9 +25,15 @@ class RasaIntent:
         os.makedirs(self.cache_dir, exist_ok=True)
 
         # 2. save the log info into <plugin_name>.log file
-        log_file = os.path.join(self.cache_dir, 'intent_LGR.log')
-        logging.basicConfig(filename=log_file, level=logging.INFO)
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger('rasaintent')
+        self.logger.handlers = []
+        self.logger.setLevel('INFO')
+        self.logger.propagate = False
+        log_file = os.path.join(self.cache_dir, 'intent_LTE.log')
+
+        file_handler = logging.FileHandler(log_file, 'a', encoding='utf-8')
+        file_handler.setLevel('INFO')
+        self.logger.addHandler(file_handler)
 
         # 3. create the http client
         self.http = urllib3.PoolManager()
