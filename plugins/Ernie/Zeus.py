@@ -7,7 +7,7 @@ class Zeus:
     ai.baidu.com/https://ai.baidu.com/ai-doc/wenxin/Il3cbftp9
     Ernie-ViLG
     """
-    def __init__(self, access_token: str):
+    def __init__(self, access_token):
         self.url = "https://wenxin.baidu.com/younger/portal/api/rest/1.0/ernie/3.0/zeus"
         self.access_token = access_token
 

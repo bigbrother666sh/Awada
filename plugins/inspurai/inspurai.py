@@ -4,7 +4,8 @@
 # import json
 import os
 import uuid
-from plugins.inspurai.url_config import submit_request, reply_request
+from url_config import submit_request, reply_request
+
 
 def set_yuan_account(user, phone):
     os.environ['YUAN_ACCOUNT'] = user + '||' + phone
@@ -36,6 +37,7 @@ class Example:
             "id": self.get_id(),
         }
 
+
 class Yuan:
     """The main class for a user to interface with the Inspur Yuan API.
     A user can set account info and add examples of the API request.
@@ -43,15 +45,18 @@ class Yuan:
 
     def __init__(self, 
                 engine='base_10B',
-                temperature=1,
-                max_tokens=200,
+                temperature=0.9,
+                max_tokens=100,
                 input_prefix='',
                 input_suffix='\n',
                 output_prefix='答:',
                 output_suffix='\n\n',
                 append_output_prefix_to_query=False,
-                topK=3,
-                topP=0.9):
+                topK=1,
+                topP=0.9,
+                frequencyPenalty=1.0,
+                responsePenalty=1.0,
+                noRepeatNgramSize=0):
         
         self.examples = {}
         self.engine = engine
@@ -59,6 +64,9 @@ class Yuan:
         self.max_tokens = max_tokens
         self.topK = topK
         self.topP = topP
+        self.frequencyPenalty = frequencyPenalty
+        self.responsePenalty = responsePenalty
+        self.noRepeatNgramSize = noRepeatNgramSize
         self.input_prefix = input_prefix
         self.input_suffix = input_suffix
         self.output_prefix = output_prefix
@@ -66,8 +74,8 @@ class Yuan:
         self.append_output_prefix_to_query = append_output_prefix_to_query
         self.stop = (output_suffix + input_prefix).strip()
 
-        if self.engine not in ['base_10B','translate','dialog']:
-            raise Exception('engine must be one of [\'base_10B\',\'translate\',\'dialog\'] ')
+        # if self.engine not in ['base_10B','translate','dialog']:
+        #     raise Exception('engine must be one of [\'base_10B\',\'translate\',\'dialog\'] ')
 
     def add_example(self, ex):
         """Add an example to the object.
@@ -122,21 +130,25 @@ class Yuan:
     
     def response(self, 
                 query,
-                engine='',
+                engine='base_10B',
                 max_tokens=20,
-                temperature=0.3,
-                topP=0.9,
-                topK=7):
+                temperature=0.9,
+                topP=0.1,
+                topK=1,
+                frequencyPenalty=1.0,
+                responsePenalty=1.0,
+                noRepeatNgramSize=0):
         """Obtains the original result returned by the API."""
 
         try:
-            requestId = submit_request(query,temperature,topP,topK,max_tokens, engine)
+            # requestId = submit_request(query,temperature,topP,topK,max_tokens, engine)
+            requestId = submit_request(query, temperature, topP, topK, max_tokens, engine, frequencyPenalty,
+                                       responsePenalty, noRepeatNgramSize)
             response_text = reply_request(requestId)
         except Exception as e:
             raise e
         
         return response_text
-
 
     def del_special_chars(self, msg):
         special_chars = ['<unk>', '<eod>', '#', '▃', '▁', '▂', '　']
@@ -144,18 +156,23 @@ class Yuan:
             msg = msg.replace(char, '')
         return msg
 
-
     def submit_API(self, prompt, trun='▃'):
         """Submit prompt to yuan API interface and obtain an pure text reply.
         :prompt: Question or any content a user may input.
         :return: pure text response."""
         query = self.craft_query(prompt)
-        res = self.response(query,engine=self.engine,
+        res = self.response(query, engine=self.engine,
                             max_tokens=self.max_tokens,
                             temperature=self.temperature,
                             topP=self.topP,
-                            topK=self.topK)
-        txt = res['resData'] if res else "something went wrong with yuan service"
+                            topK=self.topK,
+                            frequencyPenalty = self.frequencyPenalty,
+                            responsePenalty = self.responsePenalty,
+                            noRepeatNgramSize = self.noRepeatNgramSize)
+        if 'resData' in res and res['resData']:
+            txt = res['resData']
+        else:
+            txt = 'something went wrong with yuan service'
         # 单独针对翻译模型的后处理
         if self.engine == 'translate':
             txt = txt.replace(' ##', '').replace(' "', '"').replace(": ", ":").replace(" ,", ",") \
