@@ -80,26 +80,25 @@ class DramaPlugin(WechatyPlugin):
         else:
             self.relations = {}
 
-        if "user_memory.json" in self.config_files:
-            with open(os.path.join(self.config_url, 'user_memory.json'), 'r', encoding='utf-8') as f:
-                self.user_memory = json.load(f)
-        else:
-            self.user_memory = {}
-
         if "users.json" in self.config_files:
             with open(os.path.join(self.config_url, 'users.json'), 'r', encoding='utf-8') as f:
                 self.users = json.load(f)
         else:
             self.users = {}
 
+        if self.users:
+            self.user_memory = dict.fromkeys(self.users.keys(), dict.fromkeys(self.scenarios.keys(), []))
+        else:
+            self.user_memory = {}
+
         if "last_turn_memory.json" in self.config_files:
             with open(os.path.join(self.config_url, 'last_turn_memory.json'), 'r', encoding='utf-8') as f:
                 self.last_turn_memory = json.load(f)
         else:
             self.last_turn_memory = {}
-            if self.user_memory:
+            if self.users:
                 with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
-                    for key in self.user_memory.keys():
+                    for key in self.users.keys():
                         self.last_turn_memory[key] = json.load(f)
 
         # 6. initialize yuan-api
@@ -448,7 +447,7 @@ class DramaPlugin(WechatyPlugin):
                     if len(reply) <= 5 or reply not in last_dialog:
                         break
 
-                if reply == '' or reply == "somethingwentwrongwithyuanservice" or reply == "请求异常，请重试":
+                if not reply or reply == "somethingwentwrongwithyuanservice" or reply == "请求异常，请重试":
                     self.logger.warning(f'Yuan may out of service, {reply}')
                     continue
 
@@ -567,8 +566,6 @@ class DramaPlugin(WechatyPlugin):
         """
         if intent in ['notinterest', 'bye']:
             await msg.say('[微笑]')
-        elif intent == 'praise':
-            await msg.say('[666]记得要去看哦~')
         elif intent in ['challenge', 'challenge_bye']:
             await msg.say('呵呵……人类[困]')
         elif intent == 'continuetosay':

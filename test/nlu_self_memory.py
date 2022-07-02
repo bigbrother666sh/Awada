@@ -1,3 +1,8 @@
+"""
+take this program in the uie folder together with the focus.json as well as memory.txt file
+then run it
+"""
+
 from pprint import pprint
 import json
 from paddlenlp import Taskflow
@@ -7,13 +12,14 @@ with open('focus.json', 'r', encoding='utf-8') as f:
 if not schema or "" in schema:
     raise RuntimeError('Drama focus.json not valid, pls refer to above info and try again')
 
-uie = Taskflow('information_extraction', schema=schema)
+uie = Taskflow('information_extraction', schema=schema, task_path='checkpoint/model_best')
 
 
 def nlu_topic(text: [str]) -> list:
     results = uie(text)
     topics = []
     for _result in results:
+        print(_result)
         topic = {}
         for key, value in _result.items():
             topic[key] = set([entity['text'] for entity in value if entity['probability'] > 0.64])

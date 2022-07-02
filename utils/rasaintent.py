@@ -62,7 +62,7 @@ class RasaIntent:
         _result = json.loads(_test_res.data)
         _intent = _result['intent']['name']
         _conf = _result['intent']['confidence']
-        if _conf >= 0.5:
+        if _conf >= 0.5 and _intent != 'nlu_fallback':
             self.logger.info(f'text: {text}---Intent: {_intent} confidence: {_conf}')
         else:
             self.logger.warning(f'text: {text}---Intent: {_intent} confidence: {_conf}')

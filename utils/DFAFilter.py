@@ -9,6 +9,7 @@ https://github.com/guojia60180/sensitive-words-filter
 import os
 import logging
 
+
 class DFAFilter:
     '''有穷状态机完成'''
 
@@ -55,7 +56,7 @@ class DFAFilter:
                 break
 
         if i == len(chars)-1:
-            level[self.delimit]=0
+            level[self.delimit] = 0
 
     file = os.path.split(os.path.realpath(__file__))[0]
 
