@@ -385,9 +385,11 @@ class DramaPlugin(WechatyPlugin):
             for shcema in self.schema:
                 if not topic.get(shcema, []):
                     continue
-                for _memory in memory:
-                    if topic[shcema].intersection(_memory.get(shcema, set())):
-                        memory_text += _memory['text']
+                for i in range(len(memory)-1, -1, -1):
+                    if topic[shcema].intersection(memory[i].get(shcema, set())):
+                        memory_text = memory[i]['text'] + memory_text
+                        if len(memory_text) >= 150:
+                            break
                 if memory_text:
                     break
 
