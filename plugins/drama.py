@@ -443,7 +443,7 @@ class DramaPlugin(WechatyPlugin):
                 self.logger.info(prompt)
                 for i in range(7):
                     reply = self.yuan.submit_API(prompt, trun="”")
-                    if reply == '':
+                    if not reply or reply == "somethingwentwrongwithyuanservice" or reply == "请求异常，请重试":
                         self.logger.warning(f'generation failed {str(i+1)} times.')
                         continue
                     if len(reply) <= 5 or reply not in last_dialog:
