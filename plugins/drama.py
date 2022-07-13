@@ -393,6 +393,12 @@ class DramaPlugin(WechatyPlugin):
                 if memory_text:
                     break
 
+        if len(memory_text) < 50:
+            for i in range(len(memory)-1, -1, -1):
+                memory_text = memory[i]['text'] + memory_text
+                if len(memory_text) >= 50:
+                    break
+
         # 3. combine to the pre_prompt
         if memory_text:
             pre_prompt = self.relations.get("你", "") + self.relations.get(character, '') + selfmemory_text + rules.get('DESCRIPTIONTEXT', '') + '刚才' + memory_text + '，现在' + last_dialog + "你"
@@ -460,8 +466,7 @@ class DramaPlugin(WechatyPlugin):
         self.logger.info("----------------------------\n")
 
         # 5. memory saving
-        if topic:
-            memory.append({**{"text": last_dialog}, **topic})
+        memory.append({**{"text": last_dialog}, **topic})
         self.last_turn_memory[talker.contact_id][scenario][character]["text"] = [f"你说：“{'。'.join(replies)}”"]
         self.last_turn_memory[talker.contact_id][scenario][character]["talker"] = ["你"]
 

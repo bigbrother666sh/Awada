@@ -77,6 +77,7 @@ class Drama:
                          topP=0.9,
                          frequencyPenalty=1.2,)
 
+
     def _file_check(self) -> None:
         """check the config file"""
 
@@ -154,11 +155,11 @@ class Drama:
         memory_text = ''
         for i in range(len(self.memory[scenario])-1, -1, -1):
             memory_text = self.memory[scenario][i] + memory_text
-            if len(memory_text) >= 150:
+            if len(memory_text) >= 50:
                 break
 
         prompt = self.relations.get("你", "") + self.relations.get(character, '') + self.scenarios[scenario][character].get('DESCRIPTIONTEXT', '') + memory_text + "你说：“"
-
+        #print(prompt)
         for i in range(7):
             reply = self.yuan.submit_API(prompt, trun="”")
             if not reply or reply == "somethingwentwrongwithyuanservice" or reply == "请求异常，请重试":
@@ -174,18 +175,35 @@ class Drama:
 
 
 if __name__ == '__main__':
-    caixiao = Drama('caixiao')
-    sunruo = Drama('sunruo')
-    #zhangjiayi = Drama('drama_configs/zhangjiayi')
-
-    #gfw = DFAFilter()
-    #gfw.parse()
-    #rasa = RasaIntent()
+    """
+    caixiao = Drama('theater/caixiao')
+    sunruo = Drama('theater/sunruo')
+    zhangjiayi = Drama('theater/zhangjiayi')
 
     while True:
-        text = sunruo.soul('awake', 'caixiao')
-        print(f"孙若说：“{text}”")
-        caixiao.memory['awake'].append(f"孙若说：“{text}”")
-        text = caixiao.soul('awake', 'sunruo')
+        text = zhangjiayi.soul('seeagain', 'caixiao')
+        print(f"张家怡说：“{text}”")
+        caixiao.memory['seeagain'].append(f"张家怡说：“{text}”")
+        sunruo.memory['seeagain'].append(f"张家怡说：“{text}”")
+
+        text = caixiao.soul('seeagain', 'zhangjiayi')
         print(f"蔡晓说：“{text}”")
-        sunruo.memory['awake'].append(f"蔡晓说：“{text}”")
+        sunruo.memory['seeagain'].append(f"蔡晓说：“{text}”")
+        zhangjiayi.memory['seeagain'].append(f"蔡晓说：“{text}”")
+
+        text = sunruo.soul('seeagain', 'zhangjiayi')
+        print(f"孙若说：“{text}”")
+        caixiao.memory['seeagain'].append(f"孙若说：“{text}”")
+        zhangjiayi.memory['seeagain'].append(f"孙若说：“{text}”")
+    """
+    a = Drama('theater/a')
+    b = Drama('theater/b')
+
+    while True:
+        text = a.soul('discuss', 'b')
+        print(f"A说：“{text}”")
+        b.memory['discuss'].append(f"A说：“{text}”")
+
+        text = b.soul('discuss', 'a')
+        print(f"B说：“{text}”")
+        a.memory['discuss'].append(f"B说：“{text}”")
