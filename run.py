@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from wechaty import Wechaty, WechatyOptions
-from plugins.drama import DramaPlugin
+# from plugins.drama import DramaPlugin
 from plugins.lurker import Lurker
 
 if __name__ == "__main__":
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     )
     bot = Wechaty(options)
     bot.use([
-        DramaPlugin(),
+        # DramaPlugin(),
         Lurker(),
     ])
     asyncio.run(bot.start())

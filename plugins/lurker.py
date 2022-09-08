@@ -1,5 +1,3 @@
-import os
-import json
 from typing import Optional
 from wechaty import (
     MessageType,
@@ -7,7 +5,7 @@ from wechaty import (
     Message,
     WechatyPluginOptions
 )
-from utils.DFAFilter import DFAFilter
+# from utils.DFAFilter import DFAFilter
 from utils.rasaintent import RasaIntent
 
 
@@ -15,17 +13,9 @@ class Lurker(WechatyPlugin):
     """
     collect the data for DFA and rasa LTR
     """
-    def __init__(self, options: Optional[WechatyPluginOptions] = None, configs: str = 'CAconfigs'):
+    def __init__(self, options: Optional[WechatyPluginOptions] = None):
         super().__init__(options)
-        # 1. init the config file
-        self.config_url = configs
-        self.config_files = os.listdir(self.config_url)
 
-        with open(os.path.join(self.config_url, 'rooms.json'), 'r', encoding='utf-8') as f:
-            self.rooms = json.load(f)
-
-        self.gfw = DFAFilter()
-        self.gfw.parse()
         self.intent = RasaIntent()
 
     async def on_message(self, msg: Message) -> None:
@@ -37,7 +27,9 @@ class Lurker(WechatyPlugin):
         if msg.type() != MessageType.MESSAGE_TYPE_TEXT:
             return
 
-        # 3. rooms
-        if msg.room() and msg.room().room_id in self.rooms:
-            self.gfw.filter(msg.text())
-            self.intent.predict(msg.text())
+        text = await msg.mention_text() if msg.room() else msg.text()
+        if not text:
+            return
+
+        intent, cofidence = self.intent.predict(text)
+        await msg.say(f"text:{text}, intent: {intent}, cofidence: {cofidence}")
