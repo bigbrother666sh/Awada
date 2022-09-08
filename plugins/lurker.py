@@ -27,7 +27,13 @@ class Lurker(WechatyPlugin):
         if msg.type() != MessageType.MESSAGE_TYPE_TEXT:
             return
 
-        text = await msg.mention_text() if msg.room() else msg.text()
+        if msg.room():
+            if not await msg.mention_self():
+                return
+            else:
+                text = await msg.mention_text()
+        else:
+            text = msg.text()
         if not text:
             return
 
