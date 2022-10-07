@@ -13,7 +13,7 @@ from wechaty import (
     Message,
     WechatyPluginOptions
 )
-from wechaty_puppet import get_logger
+from plugins.paddleasr import asr
 from utils.DFAFilter import DFAFilter
 from utils.rasaintent import RasaIntent
 from plugins.inspurai.inspurai import Yuan
@@ -39,13 +39,10 @@ class DramaPlugin(WechatyPlugin):
         if len(self.config_files) < 4:
             raise RuntimeError('Drada plugin config_files not enough, pls add and try again')
 
-        self.cache_dir = f'./.{self.name}'
-        self.file_cache_dir = f'{self.cache_dir}/file'
-        os.makedirs(self.file_cache_dir, exist_ok=True)
-
         # 2. save the log info into <plugin_name>.log file
-        log_file = os.path.join(self.cache_dir, 'log.log')
-        self.logger = get_logger(self.name, log_file)
+        self.record_url = os.path.join(os.environ.get("CACHE_DIR", ".wechaty"), self.name)
+        self.file_cache = os.path.join(self.record_url, '.files')
+        os.makedirs(self.file_cache, exist_ok=True)
 
         # 3. check and load directors
         if self._file_check() is False:
@@ -97,7 +94,7 @@ class DramaPlugin(WechatyPlugin):
         else:
             self.last_turn_memory = {}
             if self.users:
-                with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
+                with open(os.path.join(self.file_cache, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
                     for key in self.users.keys():
                         self.last_turn_memory[key] = json.load(f)
 
@@ -251,7 +248,7 @@ class DramaPlugin(WechatyPlugin):
                     if table.cell_value(i, k):
                         rules[name][table.cell_value(0, k)][table.cell_value(i, 0)] = table.cell_value(i, k)
 
-        with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'w', encoding='utf-8') as f:
+        with open(os.path.join(self.file_cache, 'last_turn_memory_template.json'), 'w', encoding='utf-8') as f:
             json.dump(last_turn_memory_template, f, ensure_ascii=False)
 
         return rules
@@ -474,7 +471,22 @@ class DramaPlugin(WechatyPlugin):
         talker = msg.talker()
 
         # 1. 判断是否是自己发送的消息\weixin service\room message
-        if talker.contact_id == msg.is_self() or talker.contact_id == "weixin" or msg.room():
+        if talker.contact_id == msg.is_self() or talker.contact_id == "weixin":
+            return
+
+        if msg.type() == MessageType.MESSAGE_TYPE_AUDIO:
+            self.logger.info('接受到语音消息，开始语音识别')
+            file_box = await msg.to_file_box()
+            saved_file = os.path.join(self.file_cache, f"silk_{talker.contact_id}.silk")
+            await file_box.to_file(saved_file, overwrite=True)
+            text = asr(talker=talker.contact_id, input_silk=saved_file, cache_url=self.file_cache)
+            self.logger.info(f"语音识别结果: {text}")
+            if text == '######':
+                await msg.say("抱歉，没听清呢，您还是打字好么？或者再说一遍吧")
+                return
+        elif msg.type() == MessageType.MESSAGE_TYPE_TEXT:
+            text = await msg.mention_text() if msg.room() else msg.text()
+        else:
             return
 
         # 2. check if is director
@@ -491,7 +503,7 @@ class DramaPlugin(WechatyPlugin):
         if talker.contact_id not in self.users:
             self.users[talker.contact_id] = ['陌生人', 'welcome']
             self.user_memory[talker.contact_id] = dict.fromkeys(self.scenarios.keys(), [])
-            with open(os.path.join(self.file_cache_dir, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
+            with open(os.path.join(self.file_cache, 'last_turn_memory_template.json'), 'r', encoding='utf-8') as f:
                 self.last_turn_memory[talker.contact_id] = json.load(f)
             """
             整体上应该是，一个剧本有很多局，每一局对应特定的一群玩家，每个玩家对应一个character【这些信息体现在users.json】
